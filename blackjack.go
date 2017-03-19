@@ -12,22 +12,19 @@ type Game struct {
   player_hand []int
 }
 
+type Card struct {
+  CardValue int
+  CardName string
+  AceFlag
+}
+
 func main() {
   game := NewGame()
-//fmt.Println("what is in game: ", game)
-//fmt.Println("suit for card 1: ", CardSuit(game.deck[13]))
-//fmt.Println("card value: ", CardName(game.deck[13]))
-//fmt.Println("hand:", PrintFullHand(game.dealer_hand))
-//fmt.Println("hand:", game.dealer_hand)
-//fmt.Println("deal", game.Deal())
-//fmt.Println("deal", game.Deal())
-  // To start the game, both the dealer and player get 2 cards
-  for i:= 0; i < 2; i++ {
-    game.dealer_hand = append(game.dealer_hand, game.Deal())
-    game.player_hand = append(game.player_hand, game.Deal())
-  }
+  game.InitialDeal()
+
   fmt.Println("player: \n", PrintGameHand(game.player_hand))
   fmt.Println("dealer: \n", PrintGameHand(game.dealer_hand))
+
   reader := bufio.NewReader(os.Stdin)
   fmt.Println("Would you like another card? (yes/no)")
   text, _ := reader.ReadString('\n')
@@ -46,7 +43,6 @@ func main() {
 
   fmt.Println("player hand:", PrintFullHand(game.player_hand))
   fmt.Println("dealer hand:", PrintFullHand(game.dealer_hand))
-  
 
 }
 
@@ -62,12 +58,6 @@ func NewGame() *Game {
   return &game
 }
 
-func (g *Game) DisplayHands() {
-  fmt.Println("Dealer\n")
-  for i := 1; i < len(g.dealer_hand); i++ {
-    fmt.Println(g.dealer_hand[i]) }
-}
-
 func (g *Game) Deal() int {
   // Randomly select an index from remaining cards, remove it from the array
   rand.Seed(time.Now().UTC().UnixNano())
@@ -76,6 +66,15 @@ func (g *Game) Deal() int {
   g.deck = append(g.deck[:index], g.deck[index+1:]...)
   return card
 }
+
+func (g *Game) InitialDeal() {
+  NumInitialCards := 2
+  for i:= 0; i < NumInitialCards; i++ {
+    g.dealer_hand = append(g.dealer_hand, g.Deal())
+    g.player_hand = append(g.player_hand, g.Deal())
+  }
+}
+
 
 func CardSuit(card int) string {
   switch(card/13) {
@@ -128,12 +127,11 @@ func PrintFullHand(hand []int) string {
 func CalcScore(hand []int) int {
   total := 0
   ace_flag := false
-  fmt.Println("hand: ", hand)
-   for _, val :=range hand {
-     if val%13 > 9 {
+   for _, card :=range hand {
+     if card%13 > 9 {
        total += 10
-     } else if val%13 > 0 {
-       total += val%13 + 1
+     } else if card%13 > 0 {
+       total += card%13 + 1
      } else {
        total += 1
        ace_flag = true
